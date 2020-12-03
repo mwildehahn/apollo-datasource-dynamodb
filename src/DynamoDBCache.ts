@@ -73,7 +73,7 @@ export class DynamoDBCacheImpl<T = unknown> implements DynamoDBCache<T> {
    * @param getItemInput the input that provides information about which record to retrieve from the cache/dynamodb table
    * @param ttl the time-to-live value of the item in the cache. determines how long the item persists in the cache
    */
-  async getItem(getItemInput: DynamoDB.DocumentClient.GetItemInput, ttl?: number): Promise<T> {
+  async getItem(getItemInput: DynamoDB.DocumentClient.GetItemInput, ttl?: number): Promise<T | undefined> {
     try {
       const cacheKey = buildCacheKey(CACHE_PREFIX_KEY, getItemInput.TableName, getItemInput.Key);
       const itemFromCache: T | undefined = await this.retrieveFromCache(cacheKey);
@@ -83,8 +83,11 @@ export class DynamoDBCacheImpl<T = unknown> implements DynamoDBCache<T> {
 
       // item is not in cache, retrieve from DynamoDB, if found, set in cache, otherwise throw ApolloError
       const output: DynamoDB.DocumentClient.GetItemOutput = await this.docClient.get(getItemInput).promise();
-      const item: T | undefined = output.Item as T;
+      if (!output.Item) {
+        return undefined;
+      }
 
+      const item = output.Item as T;
       await this.setInCache(cacheKey, item, ttl);
 
       return item;

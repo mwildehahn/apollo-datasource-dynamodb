@@ -54,7 +54,7 @@ export abstract class DynamoDBDataSource<ITEM = unknown, TContext = unknown> ext
    * @param getItemInput the input that provides information about which record to retrieve from the cache/dynamodb table
    * @param ttl the time-to-live value of the item in the cache. determines how long the item persists in the cache
    */
-  async getItem(getItemInput: DynamoDB.DocumentClient.GetItemInput, ttl?: number): Promise<ITEM> {
+  async getItem(getItemInput: DynamoDB.DocumentClient.GetItemInput, ttl?: number): Promise<ITEM | undefined> {
     return await this.dynamodbCache.getItem(getItemInput, ttl);
   }
 
